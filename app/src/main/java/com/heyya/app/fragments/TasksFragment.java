@@ -1,6 +1,5 @@
 package com.heyya.app.fragments;
 
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,12 +13,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.heyya.app.R;
 import com.heyya.app.adapters.TaskAdapter;
 import com.heyya.app.data.MockDataManager;
 import com.heyya.app.models.Task;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class TasksFragment extends Fragment implements TaskAdapter.TaskListener {
@@ -27,6 +26,7 @@ public class TasksFragment extends Fragment implements TaskAdapter.TaskListener 
     private MockDataManager dataManager;
     private TaskAdapter adapter;
     private RecyclerView recyclerView;
+    private TextView tvEmptyState;
     private String currentFilter = "all";
 
     @Nullable
@@ -43,21 +43,34 @@ public class TasksFragment extends Fragment implements TaskAdapter.TaskListener 
         recyclerView = view.findViewById(R.id.tasks_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        // FAB
-        FloatingActionButton fab = view.findViewById(R.id.fab_add_task);
+        tvEmptyState = view.findViewById(R.id.tv_empty_state);
+
+        // FAB — Criar Tarefa (UC3)
+        ExtendedFloatingActionButton fab = view.findViewById(R.id.fab_add_task);
         fab.setOnClickListener(v -> showTaskDialog(null));
 
-        // Filter chips
+        // Filter Chips
         ChipGroup chipGroup = view.findViewById(R.id.filter_chips);
         chipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
-            if (checkedIds.isEmpty()) return;
-            Chip chip = view.findViewById(checkedIds.get(0));
-            if (chip != null) {
-                currentFilter = chip.getTag().toString();
-                loadTasks();
+            if (checkedIds.isEmpty()) {
+                currentFilter = "all";
+            } else {
+                Chip chip = view.findViewById(checkedIds.get(0));
+                if (chip != null && chip.getTag() != null) {
+                    currentFilter = chip.getTag().toString();
+                } else {
+                    currentFilter = "all";
+                }
             }
+            loadTasks();
         });
 
+        loadTasks();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         loadTasks();
     }
 
@@ -78,11 +91,18 @@ public class TasksFragment extends Fragment implements TaskAdapter.TaskListener 
             default:
                 tasks = dataManager.getTasks();
         }
+
         adapter = new TaskAdapter(tasks, this);
         recyclerView.setAdapter(adapter);
+
+        // Empty state
+        if (tvEmptyState != null) {
+            tvEmptyState.setVisibility(tasks.isEmpty() ? View.VISIBLE : View.GONE);
+            recyclerView.setVisibility(tasks.isEmpty() ? View.GONE : View.VISIBLE);
+        }
     }
 
-    // UC3 / UC4 - Create or Edit Task Dialog
+    // UC3 / UC4 - Criar ou Editar Tarefa
     private void showTaskDialog(@Nullable Task editTask) {
         View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_task, null);
 
@@ -93,67 +113,91 @@ public class TasksFragment extends Fragment implements TaskAdapter.TaskListener 
         TextView tvDeadline = dialogView.findViewById(R.id.tv_deadline);
         TextView tvWarning = dialogView.findViewById(R.id.tv_rn_warning);
 
-        // Spinners
+        // Category Spinner
         String[] categories = {"estudo", "trabalho", "saude", "pessoal"};
         String[] catLabels = {"📚 Estudo", "💼 Trabalho", "❤️ Saúde", "🌟 Pessoal"};
-        spCategory.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, catLabels));
+        ArrayAdapter<String> catAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_dropdown_item, catLabels);
+        spCategory.setAdapter(catAdapter);
 
+        // Priority Spinner
         String[] priorities = {"baixa", "media", "alta"};
         String[] priLabels = {"🟢 Baixa", "🟡 Média", "🔴 Alta"};
-        spPriority.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, priLabels));
+        ArrayAdapter<String> priAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_dropdown_item, priLabels);
+        spPriority.setAdapter(priAdapter);
 
-        // Deadline
+        // Deadline date picker
         final String[] selectedDate = {MockDataManager.getTodayString()};
         tvDeadline.setText("📅 " + formatDate(selectedDate[0]));
         tvDeadline.setOnClickListener(v -> {
             Calendar cal = Calendar.getInstance();
-            new DatePickerDialog(requireContext(), (dp, y, m, d) -> {
+            DatePickerDialog picker = new DatePickerDialog(requireContext(), (dp, y, m, d) -> {
                 selectedDate[0] = String.format(Locale.getDefault(), "%04d-%02d-%02d", y, m + 1, d);
                 tvDeadline.setText("📅 " + formatDate(selectedDate[0]));
-            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
+            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+            picker.show();
         });
 
-        // RN01 Check
+        // RN01 Eisenhower Check
         if (dataManager.getHighPriorityTodayCount() >= 3) {
             tvWarning.setVisibility(View.VISIBLE);
         }
 
-        // If editing, fill fields
+        // Fill fields if editing (UC4)
         if (editTask != null) {
             etTitle.setText(editTask.getTitulo());
             etDesc.setText(editTask.getDescricao());
-            selectedDate[0] = editTask.getPrazo();
-            tvDeadline.setText("📅 " + formatDate(editTask.getPrazo()));
+            selectedDate[0] = editTask.getPrazo() != null ? editTask.getPrazo() : MockDataManager.getTodayString();
+            tvDeadline.setText("📅 " + formatDate(selectedDate[0]));
             for (int i = 0; i < categories.length; i++) {
-                if (categories[i].equals(editTask.getCategoria())) spCategory.setSelection(i);
+                if (categories[i].equals(editTask.getCategoria())) {
+                    spCategory.setSelection(i);
+                    break;
+                }
             }
             for (int i = 0; i < priorities.length; i++) {
-                if (priorities[i].equals(editTask.getPrioridade())) spPriority.setSelection(i);
+                if (priorities[i].equals(editTask.getPrioridade())) {
+                    spPriority.setSelection(i);
+                    break;
+                }
             }
         }
 
-        new AlertDialog.Builder(requireContext(), R.style.Theme_HeyYa_Dialog)
-                .setTitle(editTask != null ? "Editar Tarefa" : "Nova Tarefa")
+        // Build Dialog
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(editTask != null ? "✏️ Editar Tarefa" : "➕ Nova Tarefa")
                 .setView(dialogView)
                 .setPositiveButton(editTask != null ? "Salvar" : "Criar", (dialog, which) -> {
                     String title = etTitle.getText().toString().trim();
-                    if (title.isEmpty()) return;
+                    if (title.isEmpty()) {
+                        Toast.makeText(requireContext(), "O título não pode estar vazio", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    String desc = etDesc.getText().toString().trim();
+                    String cat = categories[spCategory.getSelectedItemPosition()];
+                    String pri = priorities[spPriority.getSelectedItemPosition()];
 
                     if (editTask != null) {
+                        // UC4 - Editar
                         editTask.setTitulo(title);
-                        editTask.setDescricao(etDesc.getText().toString().trim());
-                        editTask.setCategoria(categories[spCategory.getSelectedItemPosition()]);
-                        editTask.setPrioridade(priorities[spPriority.getSelectedItemPosition()]);
+                        editTask.setDescricao(desc);
+                        editTask.setCategoria(cat);
+                        editTask.setPrioridade(pri);
                         editTask.setPrazo(selectedDate[0]);
                         dataManager.updateTask(editTask);
+                        Toast.makeText(requireContext(), "✅ Tarefa atualizada!", Toast.LENGTH_SHORT).show();
                     } else {
+                        // UC3 - Criar
                         Task newTask = new Task();
                         newTask.setTitulo(title);
-                        newTask.setDescricao(etDesc.getText().toString().trim());
-                        newTask.setCategoria(categories[spCategory.getSelectedItemPosition()]);
-                        newTask.setPrioridade(priorities[spPriority.getSelectedItemPosition()]);
+                        newTask.setDescricao(desc);
+                        newTask.setCategoria(cat);
+                        newTask.setPrioridade(pri);
                         newTask.setPrazo(selectedDate[0]);
                         dataManager.addTask(newTask);
+                        Toast.makeText(requireContext(), "✅ Tarefa criada!", Toast.LENGTH_SHORT).show();
                     }
                     loadTasks();
                 })
@@ -164,6 +208,8 @@ public class TasksFragment extends Fragment implements TaskAdapter.TaskListener 
     @Override
     public void onTaskChecked(Task task) {
         dataManager.toggleTaskStatus(task.getId());
+        String msg = task.isConcluida() ? "Tarefa reaberta" : "✅ Tarefa concluída! +XP";
+        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
         loadTasks();
     }
 
@@ -174,11 +220,12 @@ public class TasksFragment extends Fragment implements TaskAdapter.TaskListener 
 
     @Override
     public void onTaskDelete(Task task) {
-        new AlertDialog.Builder(requireContext(), R.style.Theme_HeyYa_Dialog)
-                .setTitle("Excluir Tarefa")
-                .setMessage("Remover \"" + task.getTitulo() + "\"?")
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("🗑️ Excluir Tarefa")
+                .setMessage("Deseja remover \"" + task.getTitulo() + "\"?")
                 .setPositiveButton("Excluir", (d, w) -> {
                     dataManager.deleteTask(task.getId());
+                    Toast.makeText(requireContext(), "Tarefa excluída", Toast.LENGTH_SHORT).show();
                     loadTasks();
                 })
                 .setNegativeButton("Cancelar", null)
@@ -186,7 +233,7 @@ public class TasksFragment extends Fragment implements TaskAdapter.TaskListener 
     }
 
     private String formatDate(String date) {
-        if (date == null) return "";
+        if (date == null || date.isEmpty()) return "Hoje";
         String[] parts = date.split("-");
         if (parts.length == 3) return parts[2] + "/" + parts[1];
         return date;

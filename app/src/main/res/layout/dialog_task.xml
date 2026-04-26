@@ -1,74 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="8dp">
+    android:layout_height="wrap_content">
 
-    <EditText
-        android:id="@+id/et_task_title"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@drawable/bg_input"
-        android:paddingHorizontal="16dp"
-        android:hint="Título da tarefa"
-        android:textColor="@color/text_primary"
-        android:textColorHint="@color/text_muted"
-        android:textSize="14sp"
-        android:inputType="text"
-        android:layout_marginBottom="12dp" />
-
-    <EditText
-        android:id="@+id/et_task_desc"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:background="@drawable/bg_input"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp"
-        android:hint="Descrição..."
-        android:textColor="@color/text_primary"
-        android:textColorHint="@color/text_muted"
-        android:textSize="14sp"
-        android:inputType="textMultiLine"
-        android:gravity="top"
-        android:layout_marginBottom="12dp" />
-
-    <Spinner
-        android:id="@+id/sp_category"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@drawable/bg_input"
-        android:paddingHorizontal="16dp"
-        android:layout_marginBottom="12dp" />
-
-    <Spinner
-        android:id="@+id/sp_priority"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@drawable/bg_input"
-        android:paddingHorizontal="16dp"
-        android:layout_marginBottom="12dp" />
-
-    <TextView
-        android:id="@+id/tv_deadline"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@drawable/bg_input"
-        android:paddingHorizontal="16dp"
-        android:gravity="center_vertical"
-        android:text="📅 Selecionar prazo"
-        android:textColor="@color/text_primary"
-        android:textSize="14sp"
-        android:layout_marginBottom="8dp" />
-
-    <TextView
-        android:id="@+id/tv_rn_warning"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="⚠️ RN01: Você já possui 3 tarefas de alta prioridade hoje. Prevenção de burnout ativada."
-        android:textColor="@color/error"
-        android:textSize="12sp"
-        android:padding="12dp"
-        android:background="@color/bg_tertiary"
-        android:visibility="gone" />
-</LinearLayout>
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Título -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Título *"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/et_task_title"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_input"
+            android:paddingHorizontal="16dp"
+            android:hint="Ex: Estudar Java Collections"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_muted"
+            android:textSize="14sp"
+            android:inputType="text"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Descrição -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Descrição"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/et_task_desc"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:background="@drawable/bg_input"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            android:hint="Detalhes da tarefa..."
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_muted"
+            android:textSize="14sp"
+            android:inputType="textMultiLine"
+            android:gravity="top"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Categoria -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Categoria"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="4dp" />
+
+        <Spinner
+            android:id="@+id/sp_category"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_input"
+            android:paddingHorizontal="12dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Prioridade -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Prioridade"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="4dp" />
+
+        <Spinner
+            android:id="@+id/sp_priority"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_input"
+            android:paddingHorizontal="12dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Prazo -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Prazo"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tv_deadline"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_input"
+            android:paddingHorizontal="16dp"
+            android:gravity="center_vertical"
+            android:text="📅 Selecionar prazo"
+            android:textColor="@color/accent_secondary"
+            android:textSize="14sp"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="8dp" />
+
+        <!-- RN01 Warning -->
+        <TextView
+            android:id="@+id/tv_rn_warning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="⚠️ RN01: Você já possui 3+ tarefas de alta prioridade hoje. Prevenção de burnout ativada."
+            android:textColor="@color/error"
+            android:textSize="12sp"
+            android:padding="12dp"
+            android:background="@color/bg_tertiary"
+            android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>
