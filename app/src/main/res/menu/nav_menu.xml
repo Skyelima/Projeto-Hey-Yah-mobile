@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/nav_dashboard" android:title="📊 Dashboard" />
+        <item android:id="@+id/nav_tasks" android:title="📋 Tarefas" />
+        <item android:id="@+id/nav_schedule" android:title="⚙️ Escala" />
+        <item android:id="@+id/nav_ai" android:title="🤖 Sugestões IA" />
+        <item android:id="@+id/nav_gamification" android:title="🏆 Gamificação" />
+    </group>
+    <group android:id="@+id/nav_bottom">
+        <item android:id="@+id/nav_logout" android:title="🚪 Sair" />
+    </group>
+</menu>
